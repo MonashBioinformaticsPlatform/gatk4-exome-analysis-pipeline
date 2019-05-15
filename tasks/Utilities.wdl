@@ -83,7 +83,7 @@ task ScatterIntervalList {
   command <<<
     set -e
     mkdir out
-    java -Xms1g -jar /usr/gitc/picard.jar \
+    java -Xmx1g -jar /usr/gitc/picard.jar \
       IntervalListTools \
       SCATTER_COUNT=~{scatter_count} \
       SUBDIVISION_MODE=BALANCING_WITHOUT_INTERVAL_SUBDIVISION_WITH_OVERFLOW \

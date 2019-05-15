@@ -14,7 +14,7 @@ version 1.0
 ## page at https://hub.docker.com/r/broadinstitute/genomes-in-the-cloud/ for detailed
 ## licensing information pertaining to the included programs.
 
-import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/structs/GermlineStructs.wdl"
+import "../structs/GermlineStructs.wdl"
 
 # Get version of BWA
 task GetBwaVersion {
@@ -143,7 +143,7 @@ task SamSplitter {
 
     total_reads=$(samtools view -c ~{input_bam})
 
-    java -Dsamjdk.compression_level=~{compression_level} -Xms3000m -jar /usr/gitc/picard.jar SplitSamByNumberOfReads \
+    java -Dsamjdk.compression_level=~{compression_level} -Xmx3000m -jar /usr/gitc/picard.jar SplitSamByNumberOfReads \
       INPUT=~{input_bam} \
       OUTPUT=output_dir \
       SPLIT_TO_N_READS=~{n_reads} \
@@ -155,7 +155,7 @@ task SamSplitter {
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
     preemptible: preemptible_tries
-    memory: "3.75 GB"
+    memory: "4 GB"
     disks: "local-disk " + disk_size + " HDD"
   }
 }

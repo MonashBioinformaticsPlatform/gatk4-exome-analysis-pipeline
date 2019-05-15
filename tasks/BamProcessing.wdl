@@ -28,7 +28,7 @@ task SortSam {
   Int disk_size = ceil(sort_sam_disk_multiplier * size(input_bam, "GB")) + 20
 
   command {
-    java -Dsamjdk.compression_level=~{compression_level} -Xms4000m -jar /usr/gitc/picard.jar \
+    java -Dsamjdk.compression_level=~{compression_level} -Xms4000m -Xmx6000m -jar /usr/gitc/picard.jar \
       SortSam \
       INPUT=~{input_bam} \
       OUTPUT=~{output_bam_basename}.bam \
@@ -42,7 +42,7 @@ task SortSam {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
     disks: "local-disk " + disk_size + " HDD"
     cpu: "1"
-    memory: "5000 MB"
+    memory: "8000 MB"
     preemptible: preemptible_tries
   }
   output {
@@ -117,7 +117,7 @@ task MarkDuplicates {
   # While query-grouped isn't actually query-sorted, it's good enough for MarkDuplicates with ASSUME_SORT_ORDER="queryname"
 
   command {
-    java -Dsamjdk.compression_level=~{compression_level} -Xms4000m -jar /usr/gitc/picard.jar \
+    java -Dsamjdk.compression_level=~{compression_level} -Xmx14000m -jar /usr/gitc/picard.jar \
       MarkDuplicates \
       INPUT=~{sep=' INPUT=' input_bams} \
       OUTPUT=~{output_bam_basename}.bam \
@@ -132,7 +132,7 @@ task MarkDuplicates {
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
     preemptible: preemptible_tries
-    memory: "7 GB"
+    memory: "16 GB"
     disks: "local-disk " + disk_size + " HDD"
   }
   output {
@@ -145,6 +145,7 @@ task MarkDuplicates {
 task BaseRecalibrator {
   input {
     File input_bam
+    File input_bam_index
     String recalibration_report_filename
     Array[String] sequence_group_interval
     File dbsnp_vcf
@@ -172,7 +173,7 @@ task BaseRecalibrator {
   command {
     gatk --java-options "-XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -XX:+PrintFlagsFinal \
       -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCDetails \
-      -Xloggc:gc_log.log -Xms4000m" \
+      -Xloggc:gc_log.log -Xms4000m -Xmx6000m" \
       BaseRecalibrator \
       -R ~{ref_fasta} \
       -I ~{input_bam} \
@@ -185,7 +186,7 @@ task BaseRecalibrator {
   runtime {
     docker: gatk_docker
     preemptible: preemptible_tries
-    memory: "6 GB"
+    memory: "8 GB"
     disks: "local-disk " + disk_size + " HDD"
   }
   output {
@@ -197,6 +198,7 @@ task BaseRecalibrator {
 task ApplyBQSR {
   input {
     File input_bam
+    File input_bam_index
     String output_bam_basename
     File recalibration_report
     Array[String] sequence_group_interval
@@ -221,7 +223,7 @@ task ApplyBQSR {
   command {
     gatk --java-options "-XX:+PrintFlagsFinal -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps \
       -XX:+PrintGCDetails -Xloggc:gc_log.log \
-      -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Dsamjdk.compression_level=~{compression_level} -Xms3000m" \
+      -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Dsamjdk.compression_level=~{compression_level} -Xms3000m -Xmx4000m" \
       ApplyBQSR \
       --create-output-bam-md5 \
       --add-output-sam-program-record \
@@ -238,7 +240,7 @@ task ApplyBQSR {
   runtime {
     docker: gatk_docker
     preemptible: preemptible_tries
-    memory: "3500 MB"
+    memory: "6 GB"
     disks: "local-disk " + disk_size + " HDD"
   }
   output {
@@ -287,7 +289,7 @@ task GatherSortedBamFiles {
   Int disk_size = ceil(2 * total_input_size) + 20
 
   command {
-    java -Dsamjdk.compression_level=~{compression_level} -Xms2000m -jar /usr/gitc/picard.jar \
+    java -Dsamjdk.compression_level=~{compression_level} -Xms2000m -Xmx4000m -jar /usr/gitc/picard.jar \
       GatherBamFiles \
       INPUT=~{sep=' INPUT=' input_bams} \
       OUTPUT=~{output_bam_basename}.bam \
@@ -297,7 +299,7 @@ task GatherSortedBamFiles {
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
     preemptible: preemptible_tries
-    memory: "3 GB"
+    memory: "6 GB"
     disks: "local-disk " + disk_size + " HDD"
   }
   output {
@@ -322,7 +324,7 @@ task GatherUnsortedBamFiles {
   Int disk_size = ceil(2 * total_input_size) + 20
 
   command {
-    java -Dsamjdk.compression_level=~{compression_level} -Xms2000m -jar /usr/gitc/picard.jar \
+    java -Dsamjdk.compression_level=~{compression_level} -Xms2000m -Xmx4000m -jar /usr/gitc/picard.jar \
       GatherBamFiles \
       INPUT=~{sep=' INPUT=' input_bams} \
       OUTPUT=~{output_bam_basename}.bam \
@@ -332,7 +334,7 @@ task GatherUnsortedBamFiles {
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
     preemptible: preemptible_tries
-    memory: "3 GB"
+    memory: "6 GB"
     disks: "local-disk " + disk_size + " HDD"
   }
   output {

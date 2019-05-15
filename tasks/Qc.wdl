@@ -26,7 +26,7 @@ task CollectQualityYieldMetrics {
   Int disk_size = ceil(size(input_bam, "GB")) + 20
 
   command {
-    java -Xms2000m -jar /usr/gitc/picard.jar \
+    java -Xms2000m -Xmx4000m -jar /usr/gitc/picard.jar \
       CollectQualityYieldMetrics \
       INPUT=~{input_bam} \
       OQ=true \
@@ -35,7 +35,7 @@ task CollectQualityYieldMetrics {
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
     disks: "local-disk " + disk_size + " HDD"
-    memory: "3 GB"
+    memory: "6 GB"
     preemptible: preemptible_tries
   }
   output {
@@ -54,7 +54,7 @@ task CollectUnsortedReadgroupBamQualityMetrics {
   Int disk_size = ceil(size(input_bam, "GB")) + 20
 
   command {
-    java -Xms5000m -jar /usr/gitc/picard.jar \
+    java -Xms6000m -Xmx6000m -jar /usr/gitc/picard.jar \
       CollectMultipleMetrics \
       INPUT=~{input_bam} \
       OUTPUT=~{output_bam_prefix} \
@@ -72,7 +72,7 @@ task CollectUnsortedReadgroupBamQualityMetrics {
   }
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
-    memory: "7 GB"
+    memory: "8 GB"
     disks: "local-disk " + disk_size + " HDD"
     preemptible: preemptible_tries
   }
@@ -110,7 +110,7 @@ task CollectReadgroupBamQualityMetrics {
       ~{output_bam_prefix}.gc_bias.pdf \
       ~{output_bam_prefix}.gc_bias.summary_metrics
 
-    java -Xms5000m -jar /usr/gitc/picard.jar \
+    java -Xms6000m -Xmx6000m -jar /usr/gitc/picard.jar \
       CollectMultipleMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
@@ -124,7 +124,7 @@ task CollectReadgroupBamQualityMetrics {
   }
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
-    memory: "7 GB"
+    memory: "8 GB"
     disks: "local-disk " + disk_size + " HDD"
     preemptible: preemptible_tries
   }
@@ -160,7 +160,7 @@ task CollectAggregationMetrics {
       ~{output_bam_prefix}.insert_size_metrics \
       ~{output_bam_prefix}.insert_size_histogram.pdf
 
-    java -Xms5000m -jar /usr/gitc/picard.jar \
+    java -Xms6000m -Xmx6000m -jar /usr/gitc/picard.jar \
       CollectMultipleMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
@@ -178,7 +178,7 @@ task CollectAggregationMetrics {
   }
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
-    memory: "7 GB"
+    memory: "8 GB"
     disks: "local-disk " + disk_size + " HDD"
     preemptible: preemptible_tries
   }
@@ -216,7 +216,7 @@ task CrossCheckFingerprints {
 
   command <<<
     java -Dsamjdk.buffer_size=131072 \
-      -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Xms2000m \
+      -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Xms2000m -Xmx2000m \
       -jar /usr/gitc/picard.jar \
       CrosscheckFingerprints \
       OUTPUT=~{metrics_filename} \
@@ -229,7 +229,7 @@ task CrossCheckFingerprints {
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
     preemptible: preemptible_tries
-    memory: "2 GB"
+    memory: "3 GB"
     disks: "local-disk " + disk_size + " HDD"
   }
   output {
@@ -254,7 +254,7 @@ task CheckFingerprint {
 
   command <<<
     java -Dsamjdk.buffer_size=131072 \
-      -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Xms1024m  \
+      -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Xms1024m -Xmx1024m \
       -jar /usr/gitc/picard.jar \
       CheckFingerprint \
       INPUT=~{input_bam} \
@@ -268,7 +268,7 @@ task CheckFingerprint {
  runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
     preemptible: preemptible_tries
-    memory: "1 GB"
+    memory: "2 GB"
     disks: "local-disk " + disk_size + " HDD"
   }
   output {
@@ -344,7 +344,7 @@ task ValidateSamFile {
   Int disk_size = ceil(size(input_bam, "GB") + ref_size) + 20
 
   command {
-    java -Xms6000m -jar /usr/gitc/picard.jar \
+    java -Xms6000m -Xmx6000m -jar /usr/gitc/picard.jar \
       ValidateSamFile \
       INPUT=~{input_bam} \
       OUTPUT=~{report_filename} \
@@ -358,7 +358,7 @@ task ValidateSamFile {
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
     preemptible: preemptible_tries
-    memory: "7 GB"
+    memory: "8 GB"
     disks: "local-disk " + disk_size + " HDD"
   }
   output {
@@ -383,7 +383,7 @@ task CollectWgsMetrics {
   Int disk_size = ceil(size(input_bam, "GB") + ref_size) + 20
 
   command {
-    java -Xms2000m -jar /usr/gitc/picard.jar \
+    java -Xms2000m -Xmx2000m -jar /usr/gitc/picard.jar \
       CollectWgsMetrics \
       INPUT=~{input_bam} \
       VALIDATION_STRINGENCY=SILENT \
@@ -421,8 +421,8 @@ task CollectRawWgsMetrics {
   Float ref_size = size(ref_fasta, "GB") + size(ref_fasta_index, "GB")
   Int disk_size = ceil(size(input_bam, "GB") + ref_size) + 20
 
-  String main_memory = if(disk_size < 110) then "5 GB" else "7 GB"
-  String java_memory = if(disk_size < 110) then "-Xms4000m" else "-Xms6000m"
+  String main_memory = if(disk_size < 110) then "6 GB" else "8 GB"
+  String java_memory = if(disk_size < 110) then "-Xmx4000m" else "-Xmx6000m"
 
   command {
     java ${java_memory} -jar /usr/gitc/picard.jar \
@@ -466,11 +466,11 @@ task CollectHsMetrics {
   Int rounded_bam_size = ceil(size(input_bam, "GB") + 0.5)
   Int java_mem_size = if (rounded_bam_size > 9) then 9 else rounded_bam_size
   Int final_java_mem_size = if (java_mem_size < 2) then 2 else java_mem_size
-  Int mem_size = final_java_mem_size + 1
+  Int mem_size = final_java_mem_size + 2
 
   # There are probably more metrics we want to generate with this tool
   command {
-    java -Xms~{final_java_mem_size * 1000}m -jar /usr/gitc/picard.jar \
+    java -Xmx~{final_java_mem_size * 1000}m -jar /usr/gitc/picard.jar \
       CollectHsMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
@@ -507,7 +507,7 @@ task CalculateReadGroupChecksum {
   Int disk_size = ceil(size(input_bam, "GB")) + 20
 
   command {
-    java -Xms1000m -jar /usr/gitc/picard.jar \
+    java -Xmx1000m -jar /usr/gitc/picard.jar \
       CalculateReadGroupChecksum \
       INPUT=~{input_bam} \
       OUTPUT=~{read_group_md5_filename}
@@ -542,7 +542,7 @@ task ValidateGVCF {
   Int disk_size = ceil(size(input_vcf, "GB") + size(dbsnp_vcf, "GB") + ref_size) + 20
 
   command {
-    gatk --java-options -Xms3000m \
+    gatk --java-options -Xmx3000m \
       ValidateVariants \
       -V ~{input_vcf} \
       -R ~{ref_fasta} \
@@ -554,7 +554,7 @@ task ValidateGVCF {
   runtime {
     docker: gatk_docker
     preemptible: preemptible_tries
-    memory: "3500 MB"
+    memory: "4 GB"
     disks: "local-disk " + disk_size + " HDD"
   }
 }
@@ -575,7 +575,7 @@ task CollectGvcfCallingMetrics {
   Int disk_size = ceil(size(input_vcf, "GB") + size(dbsnp_vcf, "GB")) + 20
 
   command {
-    java -Xms2000m -jar /usr/gitc/picard.jar \
+    java -Xmx2000m -jar /usr/gitc/picard.jar \
       CollectVariantCallingMetrics \
       INPUT=~{input_vcf} \
       OUTPUT=~{metrics_basename} \

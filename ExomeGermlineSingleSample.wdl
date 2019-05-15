@@ -28,14 +28,23 @@ version 1.0
 ## page at https://hub.docker.com/r/broadinstitute/genomes-in-the-cloud/ for detailed
 ## licensing information pertaining to the included programs.
 
-import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/UnmappedBamToAlignedBam.wdl" as ToBam
-import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/AggregatedBamQC.wdl" as AggregatedQC
-import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/GermlineVariantDiscovery.wdl" as Calling
-import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/Qc.wdl" as QC
-import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/Utilities.wdl" as Utils
-import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/BamToCram.wdl" as ToCram
-import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/BamToGvcf.wdl" as ToGvcf
-import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/structs/GermlineStructs.wdl"
+# import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/UnmappedBamToAlignedBam.wdl" as ToBam
+# import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/AggregatedBamQC.wdl" as AggregatedQC
+# import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/GermlineVariantDiscovery.wdl" as Calling
+# import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/Qc.wdl" as QC
+# import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/Utilities.wdl" as Utils
+# import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/BamToCram.wdl" as ToCram
+# import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/tasks/BamToGvcf.wdl" as ToGvcf
+# import "https://raw.githubusercontent.com/gatk-workflows/gatk4-exome-analysis-pipeline/1.0.0/structs/GermlineStructs.wdl"
+
+import "tasks/UnmappedBamToAlignedBam.wdl" as ToBam
+import "tasks/AggregatedBamQC.wdl" as AggregatedQC
+import "tasks/GermlineVariantDiscovery.wdl" as Calling
+import "tasks/Qc.wdl" as QC
+import "tasks/Utilities.wdl" as Utils
+import "tasks/BamToCram.wdl" as ToCram
+import "tasks/BamToGvcf.wdl" as ToGvcf
+import "structs/GermlineStructs.wdl"
 
 # WORKFLOW DEFINITION
 workflow ExomeGermlineSingleSample {
@@ -99,6 +108,7 @@ workflow ExomeGermlineSingleSample {
       break_bands_at_multiples_of = references.break_bands_at_multiples_of,
       contamination = UnmappedBamToAlignedBam.contamination,
       input_bam = UnmappedBamToAlignedBam.output_bam,
+      input_bam_index = UnmappedBamToAlignedBam.output_bam_index,
       ref_fasta = references.reference_fasta.ref_fasta,
       ref_fasta_index = references.reference_fasta.ref_fasta_index,
       ref_dict = references.reference_fasta.ref_dict,

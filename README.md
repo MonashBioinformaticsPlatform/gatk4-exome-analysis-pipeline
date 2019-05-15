@@ -20,6 +20,62 @@ This WDL pipeline implements data pre-processing and initial variant calling acc
 - BQSR Report
 - Several Summary Metrics
 
+### Installing the workflow and cromwell
+```sh
+git clone --recursive https://github.com/MonashBioinformaticsPlatform/gatk4-exome-analysis-pipeline.git
+# Create a conda environment called 'cromwell', and install cromwell into it
+conda create -n cromwell -c bioconda -c conda-forge cromwell
+conda activate cromwell
+pip install gsutil
+pip install j2cli
+```
+
+### Getting the references and example data
+```sh
+export REF_BASE=/scratch/pl41/references
+mkdir -p $REF_BASE/references/broad-references/
+cd $REF_BASE/references/broad-references/
+gsutil -m rsync -r -x "CrossSpeciesContamination/*" gs://broad-references/hg38 hg38
+```
+
+```sh
+mkdir -p $REF_BASE/references/gatk-best-practices/exome-analysis-pipeline
+cd $REF_BASE/references/gatk-best-practices/exome-analysis-pipeline
+gsutil -m cp gs://gatk-best-practices/exome-analysis-pipeline/SRR099969.unmapped.bam SRR099969.unmapped.bam .
+# wget https://storage.googleapis.com/gatk-best-practices/exome-analysis-pipeline/SRR099969.unmapped.bam
+```
+
+### Running (example)
+
+Generate `inputs.json` and `options.json` files based on the template:
+```sh
+export REF_BASE=/scratch/pl41/references
+export SLURM_ACCOUNT=pl41
+export SINGULARITY_CACHE=/scratch/${SLURM_ACCOUNT}/singularity_cache
+export SINGULARITY_BIND_PATH=/scratch
+export TMPDIR=/scratch/${SLURM_ACCOUNT}/tmp
+
+j2 gatk4-exome-analysis-pipeline/ExomeGermlineSingleSample.inputs.json.j2 \
+   >gatk4-exome-analysis-pipeline/ExomeGermlineSingleSample.inputs.json
+
+j2 gatk4-exome-analysis-pipeline/ExomeGermlineSingleSample.options.json.j2 \
+   >gatk4-exome-analysis-pipeline/ExomeGermlineSingleSample.options.json
+```
+
+Run the pipeline:
+```sh
+cromwell -Xmx8g \
+         -Dconfig.file=$(pwd)/gatk4-exome-analysis-pipeline/slurm-backend.conf \
+         -Dsystem.input-read-limits.lines=1000000 \
+         -Ddefault_runtime_attributes.tmp=$TMPDIR \
+         -Ddefault_runtime_attributes.singularity_cache=$SINGULARITY_CACHE \
+         -Ddefault_runtime_attributes.singularity_bind_path=$SINGULARITY_BIND_PATH \
+         -Ddefault_runtime_attributes.slurm_account=$SLURM_ACCOUNT \
+         run gatk4-exome-analysis-pipeline/ExomeGermlineSingleSample.wdl \
+         --inputs gatk4-exome-analysis-pipeline/ExomeGermlineSingleSample.inputs.json \
+         --options gatk4-exome-analysis-pipeline/ExomeGermlineSingleSample.options.json
+```
+
 ### Software version notes :
 - GATK 4 or later 
 - Cromwell version support 
